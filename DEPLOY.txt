@@ -1,0 +1,16 @@
+CLIMA — DEPLOY NO NETLIFY
+
+Esta pasta está preparada para Netlify e contém o site e a função que consulta os status do Metrô e das linhas concedidas. Depois de publicado, o site fica disponível sem executar iniciar-clima.bat.
+
+Para publicar a partir do computador:
+1. Abra um terminal nesta pasta netlify-deploy.
+2. Faça login uma vez no Netlify CLI com `npx netlify-cli login`.
+3. Rode `npx netlify-cli deploy` e selecione o time `renato-fsilva`; o Netlify cria um deploy de prévia e pergunta se deve criar um novo site ou usar um existente.
+4. Abra e confira a URL de prévia apresentada pelo CLI.
+5. Quando a prévia estiver correta, publique no endereço principal com `npx netlify-cli deploy --prod`.
+
+O Netlify CLI pode pedir para instalar o próprio CLI na primeira execução. Confirme apenas se o terminal identificar o pacote oficial `netlify-cli`. O Node.js 22 já atende ao requisito do CLI.
+
+O site consulta dados públicos dos operadores e atualiza os painéis a cada cinco minutos. A função aplica cache de quatro minutos no CDN para reduzir chamadas às fontes oficiais.
+
+Depois da primeira publicação, o site continua online. Para atualizar a versão hospedada após editar os arquivos em `public`, rode `npx netlify-cli deploy --prod` novamente nesta pasta.

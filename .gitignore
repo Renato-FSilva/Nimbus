@@ -1,0 +1,7 @@
+node_modules/
+.netlify/
+.netlify-home/
+.npm-cache/
+.env
+.env.*
+!.env.example
