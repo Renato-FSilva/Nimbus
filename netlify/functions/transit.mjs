@@ -1,6 +1,7 @@
 const SOURCES = Object.freeze({
   metro: 'https://www.metro.sp.gov.br/wp-content/themes/metrosp/direto-metro.php?embed=1',
   artesp: 'https://ccm.artesp.sp.gov.br/metroferroviario/status-linhas/',
+  cptm: 'https://www.cptm.sp.gov.br/cptm',
 });
 
 const CACHE_HEADERS = {
