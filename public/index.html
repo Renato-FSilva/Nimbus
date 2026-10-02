@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101b38">
+  <title>Clima — previsão do tempo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Clima, início"><span class="brand-mark">✳</span> clima<span class="brand-dot">.</span></a>
+      <form class="search" id="search-form" role="search">
+        <span class="search-icon" aria-hidden="true">⌕</span>
+        <label class="sr-only" for="state-input">Estado ou UF</label>
+        <input id="state-input" type="search" placeholder="Estado / UF" autocomplete="address-level1">
+        <span class="search-divider" aria-hidden="true"></span>
+        <label class="sr-only" for="city-input">Cidade</label>
+        <input id="city-input" type="search" placeholder="Cidade" autocomplete="address-level2" required>
+        <button type="submit" aria-label="Buscar">↵</button>
+      </form>
+      <button class="unit-toggle" id="unit-toggle" type="button" aria-label="Alternar unidade">°C <span>/</span> °F</button>
+    </header>
+
+    <div id="status" class="status" role="status" aria-live="polite">Carregando previsão…</div>
+    <section class="dashboard" id="dashboard" aria-label="Previsão do tempo" hidden>
+      <section class="hero card">
+        <div class="hero-top"><div><p class="eyebrow" id="today-label">HOJE</p><h1 id="city-name">São Paulo</h1><p class="location" id="country-name">Brasil</p></div><div class="hero-icon" id="hero-icon" aria-hidden="true">☀️</div></div>
+        <div class="current"><div class="temperature"><span id="current-temp">--</span><span class="degree">°</span></div><div class="condition"><strong id="condition-text">—</strong><span>Sensação de <b id="feels-like">--°</b></span></div></div>
+        <div class="high-low"><span>↑ <b id="high-temp">--°</b></span><span>↓ <b id="low-temp">--°</b></span><span class="separator"></span><span id="summary-text">Atualizado agora</span></div>
+        <div class="sun-row"><div><span class="sun-symbol">↗</span><span><small>Nascer do sol</small><b id="sunrise">--:--</b></span></div><div><span class="sun-symbol">↘</span><span><small>Pôr do sol</small><b id="sunset">--:--</b></span></div></div>
+      </section>
+
+      <section class="right-column">
+        <section class="details card"><div class="section-heading"><div><p class="eyebrow">AGORA</p><h2>Condições do dia</h2></div><span class="live-dot">● Ao vivo</span></div>
+          <div class="metrics"><article class="metric"><span class="metric-icon">💧</span><span class="metric-label">Umidade</span><strong id="humidity">--%</strong><small id="humidity-note">—</small></article>
+            <article class="metric"><span class="metric-icon">💨</span><span class="metric-label">Vento</span><strong id="wind">-- <small>km/h</small></strong><small id="wind-note">—</small></article>
+            <article class="metric"><span class="metric-icon">☔</span><span class="metric-label">Chuva</span><strong id="rain">--%</strong><small id="rain-note">chance hoje</small></article>
+            <article class="metric"><span class="metric-icon">☀️</span><span class="metric-label">Índice UV</span><strong id="uv">--</strong><small id="uv-note">—</small></article>
+          </div>
+        </section>
+        <section class="forecast card"><div class="section-heading"><div><p class="eyebrow">PRÓXIMOS DIAS</p><h2>Previsão semanal</h2></div><span class="forecast-caption">7 dias</span></div><div class="forecast-list" id="forecast-list"></div></section>
+      </section>
+      <section class="recommendations card full-width">
+        <div class="section-heading"><div><p class="eyebrow">CONDIÇÕES PARA SAIR</p><h2>Como está para se deslocar?</h2></div><span class="forecast-caption" id="visibility-reading">Visibilidade: —</span></div>
+        <div class="travel-grid" id="travel-grid"></div>
+        <p class="advisory-note">Estimativas baseadas no clima local. Para voos, confirme sempre a situação com o aeroporto e a companhia aérea.</p>
+      </section>
+      <section class="transit card full-width">
+        <div class="section-heading"><div><p class="eyebrow">SÃO PAULO — CAPITAL</p><h2>Metrô e trens em tempo real</h2></div><button id="refresh-transit" class="refresh-button" type="button">↻ Atualizar</button></div>
+        <div class="transit-grid">
+          <article class="transit-source"><div class="transit-title"><strong>Metrô de São Paulo</strong><a href="https://www.metro.sp.gov.br/wp-content/themes/metrosp/direto-metro.php?embed=1" target="_blank" rel="noreferrer">Abrir painel ↗</a></div><div class="live-lines" id="metro-lines" aria-live="polite"><span class="loading-line">Carregando status oficial…</span></div></article>
+          <article class="transit-source"><div class="transit-title"><strong>Linhas concedidas</strong><a href="https://ccm.artesp.sp.gov.br/metroferroviario/status-linhas/" target="_blank" rel="noreferrer">Painel ARTESP ↗</a></div><div class="live-lines" id="artesp-lines" aria-live="polite"><span class="loading-line">Carregando status oficial…</span></div></article>
+          <article class="transit-source"><div class="transit-title"><strong>CPTM</strong><a href="https://www.cptm.sp.gov.br/cptm" target="_blank" rel="noreferrer">Portal oficial ↗</a></div><iframe class="transit-frame cptm-frame" title="Portal oficial da CPTM com situação atual das linhas" src="https://www.cptm.sp.gov.br/cptm" loading="lazy"></iframe></article>
+        </div>
+        <div class="transit-footer"><span>Os painéis são fornecidos pelos operadores e pela ARTESP.</span><span class="transit-updated" id="transit-updated">Painéis oficiais incorporados</span></div>
+        <p class="advisory-note">A ARTESP informa as linhas sob sua fiscalização direta. O painel não inclui as linhas operadas diretamente pelo Metrô e pela CPTM.</p>
+      </section>
+    </section>
+    <footer><span>Previsão meteorológica</span><span>Dados por <a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo</a></span></footer>
+  </main>
+</body>
+</html>
