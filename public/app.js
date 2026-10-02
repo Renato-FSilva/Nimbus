@@ -127,7 +127,6 @@ $('unit-toggle').addEventListener('click', () => {
   loadWeather();
 });
 $('refresh-transit').addEventListener('click', () => {
-  document.querySelectorAll('.transit-frame').forEach((frame) => { frame.src = frame.src; });
   $('transit-updated').textContent = `Painéis recarregados às ${new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' }).format(new Date())}`;
   loadTransitStatuses({ force: true });
 });
@@ -139,6 +138,10 @@ const metroLines = [
 const concessionLines = [
   { code: '4', name: 'Amarela' }, { code: '5', name: 'Lilás' }, { code: '6', name: 'Laranja' },
   { code: '7', name: 'Rubi' }, { code: '8', name: 'Diamante' }, { code: '9', name: 'Esmeralda' },
+];
+const cptmLines = [
+  { code: '10', name: 'Turquesa' }, { code: '11', name: 'Coral' },
+  { code: '12', name: 'Safira' }, { code: '13', name: 'Jade' },
 ];
 const transitStatuses = [
   'Operação com Impacto Pontual', 'Operação Normal', 'Operação Transitória', 'Operação Diferenciada',
@@ -168,7 +171,7 @@ function renderTransitLines(containerId, lines, sourceText, updatedText, failure
       .filter((position) => position > anchor);
     const nextLine = nextLinePositions.length ? Math.min(...nextLinePositions) : cleanText.length;
     const status = anchor >= 0 ? statusFromText(cleanText.slice(0, nextLine), anchor + line.name.length) : null;
-    if (status) rows.push({ ...line, status });
+    rows.push({ ...line, status: status ?? 'Status indisponível' });
   }
   container.replaceChildren();
   if (!rows.length) {
@@ -198,10 +201,10 @@ function renderTransitLines(containerId, lines, sourceText, updatedText, failure
     row.append(lineName, name, status);
     container.append(row);
   }
-  if (updatedText) {
+  if (updatedText || failureReason) {
     const updated = document.createElement('small');
     updated.className = 'line-updated';
-    updated.textContent = updatedText;
+    updated.textContent = updatedText || `Consulta indisponível: ${failureReason}`;
     container.append(updated);
   }
 }
@@ -210,7 +213,7 @@ async function fetchOfficialPage(source, force) {
   if (window.location.protocol === 'file:') throw new Error('Abra o site pelo iniciar-clima.bat.');
   const refresh = force ? `&refresh=${Date.now()}` : '';
   const response = await fetch(`/api/transit?source=${encodeURIComponent(source)}${refresh}`, { cache: force ? 'no-store' : 'default' });
-  if (!response.ok) throw new Error(`Servidor local respondeu HTTP ${response.status}`);
+  if (!response.ok) throw new Error(`Consulta respondeu HTTP ${response.status}`);
   const result = await response.json();
   if (!result.html) throw new Error(result.error || 'A fonte oficial retornou conteúdo vazio.');
   return { page: new DOMParser().parseFromString(result.html, 'text/html'), fetchedAt: result.fetchedAt };
@@ -220,6 +223,7 @@ async function loadTransitStatuses({ force = false } = {}) {
   const sources = [
     { id: 'metro-lines', source: 'metro', lines: metroLines },
     { id: 'artesp-lines', source: 'artesp', lines: concessionLines },
+    { id: 'cptm-lines', source: 'cptm', lines: cptmLines },
   ];
   await Promise.all(sources.map(async (source) => {
     try {
@@ -229,7 +233,7 @@ async function loadTransitStatuses({ force = false } = {}) {
       const checked = fetchedAt ? new Date(fetchedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
       renderTransitLines(source.id, source.lines, text, updatedMatch?.[1] ? `Atualizado: ${updatedMatch[1].trim()}` : `Consulta: ${checked}`);
     } catch (error) {
-      renderTransitLines(source.id, [], '', '', error.message);
+      renderTransitLines(source.id, source.lines, '', '', error.message);
     }
   }));
 }
