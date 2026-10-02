@@ -162,12 +162,14 @@ function statusFromText(text, startAt) {
 function renderTransitLines(containerId, lines, sourceText, updatedText, failureReason = '') {
   const container = $(containerId);
   const cleanText = sourceText.replace(/\s+/g, ' ').trim();
+  const normalizedText = cleanText.toLocaleLowerCase('pt-BR');
   const rows = [];
   for (const line of lines) {
-    const anchor = cleanText.lastIndexOf(line.name);
+    const lineName = line.name.toLocaleLowerCase('pt-BR');
+    const anchor = normalizedText.lastIndexOf(lineName);
     const nextLinePositions = lines
       .filter((candidate) => candidate.code !== line.code)
-      .map((candidate) => cleanText.lastIndexOf(candidate.name, anchor + line.name.length))
+      .map((candidate) => normalizedText.lastIndexOf(candidate.name.toLocaleLowerCase('pt-BR'), anchor + lineName.length))
       .filter((position) => position > anchor);
     const nextLine = nextLinePositions.length ? Math.min(...nextLinePositions) : cleanText.length;
     const status = anchor >= 0 ? statusFromText(cleanText.slice(0, nextLine), anchor + line.name.length) : null;
@@ -228,8 +230,13 @@ async function loadTransitStatuses({ force = false } = {}) {
   await Promise.all(sources.map(async (source) => {
     try {
       const { page, fetchedAt } = await fetchOfficialPage(source.source, force);
-      const text = page.body?.innerText || page.body?.textContent || '';
-      const updatedMatch = text.match(/Atualizado\s*:?\s*(\d{2}\/\d{2}\/\d{4}[^\n<]{0,30})/i);
+      const cptmStatus = source.source === 'cptm' ? page.querySelector('.situacao_linhas') : null;
+      const cptmUpdated = source.source === 'cptm' ? page.querySelector('.situacao_linhas_atualizado_em') : null;
+      const text = source.source === 'cptm'
+        ? (cptmStatus?.innerText || cptmStatus?.textContent || '')
+        : (page.body?.innerText || page.body?.textContent || '');
+      const updatedSource = cptmUpdated?.innerText || cptmUpdated?.textContent || text;
+      const updatedMatch = updatedSource.match(/Atualizado\s*:?\s*(\d{2}\/\d{2}\/\d{4}[^\n<]{0,30})/i);
       const checked = fetchedAt ? new Date(fetchedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
       renderTransitLines(source.id, source.lines, text, updatedMatch?.[1] ? `Atualizado: ${updatedMatch[1].trim()}` : `Consulta: ${checked}`);
     } catch (error) {
